@@ -7,6 +7,7 @@ public class Calculator {
         Scanner input = new Scanner(System.in);
         System.out.print("Enter expression:: ");
         String expression = input.nextLine();
+        input.close();
         expression=expression.replace('[', '(');
         expression=expression.replace(']', ')');
         String[] splitExpression = expression.split(" ");
@@ -18,12 +19,11 @@ public class Calculator {
 	}
 	
 	private static String toPostfix(String expression) {
-		String operators = "-+*/()";
+		String operators = "-+*/^()";
 		String[] tokens = expression.split("(?<=["+operators+"])|(?=["+operators+"])");
 		Stack<String> operatorStack = new Stack<String>();
-		String output;
+		String output="";
 		System.out.println(operatorStack.peek());
-		return "";
 		for (String token:tokens) {
 			if (isDouble(token))
 				output+=token;
@@ -37,19 +37,51 @@ public class Calculator {
 				operatorStack.pop();
 			}
 			else {
-				while(((!operatorStack.empty())&&(()||())&&()))
+				while(((!operatorStack.empty())&&(!computeFirst(token, operatorStack.peek()))&&(!operatorStack.peek().equals("("))))
 					output+=operatorStack.pop();
 				operatorStack.push(token);
 			}
+			while(operatorStack.size() > 0) {
 		}
-		while(operatorStack.size() > 0) {
 			if(operatorStack.search("(") > 0)
 				throw new IllegalArgumentException("Mismatched parenthesis.");
 			output+=operatorStack.pop();
 		}
 		return output;
 	}
-
+	
+	public static boolean computeFirst(String operator1, String operator2) {
+		if(getPemdasOrder(operator1) > getPemdasOrder(operator2))
+			return true;
+		else if (getPemdasOrder(operator1) < getPemdasOrder(operator2))
+			return false;
+		else
+			return isLeftAssociative(operator1);
+	}
+	
+	public static boolean isLeftAssociative(String operator1) {
+		switch (operator1.charAt(0)) {
+			case '^': return false;
+			case '+': return true;
+			case '-': return true;
+			case '/': return true;
+			case '*': return true;
+			default: return true;
+		}
+	}
+	
+	public static int getPemdasOrder(String operator) {
+		switch(operator.charAt(0)) {
+			case '^': return 3;
+			case '*': return 2;
+			case '/': return 2;
+			case '+': return 1;
+			case '-': return 1;
+			default: return 0;
+			
+		}
+	}
+	
 	public static double solvePostfix(String expression) {
 		Stack<Double> postStack = new Stack<Double>();
 		String[] terms = expression.split(" ");
