@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
 import java.util.Stack;
 
@@ -14,38 +16,36 @@ public class Calculator {
         expression = "";
         for (String term:splitExpression)
         		expression+=term;
-        expression=toPostfix(expression);
-        System.out.print(solvePostfix(expression));
+        System.out.println(solvePostfix(toPostfix(expression)));
 	}
 	
-	private static String toPostfix(String expression) {
+	private static Queue<String> toPostfix(String expression) {
 		String operators = "-+*/^()";
 		String[] tokens = expression.split("(?<=["+operators+"])|(?=["+operators+"])");
 		Stack<String> operatorStack = new Stack<String>();
-		String output="";
-		System.out.println(operatorStack.peek());
+		Queue<String> output = new LinkedList<String>();
 		for (String token:tokens) {
 			if (isDouble(token))
-				output+=token;
+				output.offer(token);
 			else if(token.equals("("))
 				operatorStack.push(token);
 			else if(token.equals(")")) {
 				if(operatorStack.search("(") <= 0)
 					throw new IllegalArgumentException("Mismatched parenthesis.");
 				while(operatorStack.search("(")>1)
-					output+=operatorStack.pop();
+					output.offer(operatorStack.pop());
 				operatorStack.pop();
 			}
 			else {
-				while(((!operatorStack.empty())&&(!computeFirst(token, operatorStack.peek()))&&(!operatorStack.peek().equals("("))))
-					output+=operatorStack.pop();
+				while(((!operatorStack.isEmpty())&&(!computeFirst(token, operatorStack.peek()))&&(!operatorStack.peek().equals("("))))
+					output.offer(operatorStack.pop());
 				operatorStack.push(token);
 			}
-			while(operatorStack.size() > 0) {
 		}
-			if(operatorStack.search("(") > 0)
-				throw new IllegalArgumentException("Mismatched parenthesis.");
-			output+=operatorStack.pop();
+			while(!operatorStack.isEmpty()) {
+				if(operatorStack.search("(") > 0)
+					throw new IllegalArgumentException("Mismatched parenthesis.");
+				output.offer(operatorStack.pop());
 		}
 		return output;
 	}
@@ -82,10 +82,10 @@ public class Calculator {
 		}
 	}
 	
-	public static double solvePostfix(String expression) {
+	public static double solvePostfix(Queue<String> expression) {
 		Stack<Double> postStack = new Stack<Double>();
-		String[] terms = expression.split(" ");
-		for(String term:terms) {
+		while(!expression.isEmpty()) {
+			String term = expression.poll();
 			if(isDouble(term))
 				postStack.push(Double.parseDouble(term));
 			else {
